@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mensa Feedback</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Mensa Feedback</h1>
+  <p id="date"></p>
+</header>
+
+<section id="menu-section">
+  <h2>Kommende Gerichte</h2>
+  <div id="menu-list"></div>
+</section>
+
+<section id="feedback-section">
+  <h2>Feedback für: <span id="current-dish">Lade...</span></h2>
+  <form id="feedback-form">
+    <input type="hidden" name="dish" id="feedback-dish">
+    <label>Gesamtbewertung:
+      <select name="overall" required>
+        <option value="">--</option>
+        <option value="1">1 ⭐</option>
+        <option value="2">2 ⭐</option>
+        <option value="3">3 ⭐</option>
+        <option value="4">4 ⭐</option>
+        <option value="5">5 ⭐</option>
+      </select>
+    </label>
+    <label>Qualität des Essens:
+      <select name="food" required>
+        <option value="">--</option>
+        <option value="1">1 ⭐</option>
+        <option value="2">2 ⭐</option>
+        <option value="3">3 ⭐</option>
+        <option value="4">4 ⭐</option>
+        <option value="5">5 ⭐</option>
+      </select>
+    </label>
+    <label>Wartezeit:
+      <select name="wait" required>
+        <option value="">--</option>
+        <option value="1">1 ⭐</option>
+        <option value="2">2 ⭐</option>
+        <option value="3">3 ⭐</option>
+        <option value="4">4 ⭐</option>
+        <option value="5">5 ⭐</option>
+      </select>
+    </label>
+    <label>Kommentar (optional):
+      <textarea name="comment" placeholder="Kurzfeedback..."></textarea>
+    </label>
+    <button type="submit">Feedback senden</button>
+  </form>
+
+  <div id="feedback-result" style="display:none;">
+    <h3>Analyse für dieses Gericht</h3>
+    <div class="star-bar" id="avg-overall"></div>
+    <div class="star-bar" id="avg-food"></div>
+    <div class="star-bar" id="avg-wait"></div>
+    <h4>Letzte Kommentare:</h4>
+    <ul id="recent-comments"></ul>
+  </div>
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>
