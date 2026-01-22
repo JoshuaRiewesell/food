@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let dishes = [];
   let feedbackData = [];
 
-  const sheetURL = "DEIN_PUBLIC_GOOGLE_SHEET_URL"; // Sheet muss öffentlich sein
+  const sheetURL = "https://docs.google.com/spreadsheets/d/1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s/edit?usp=drivesdk"; // Sheet muss öffentlich sein
 
   // -------------------------
   // Tabletop.js laden
