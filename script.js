@@ -16,28 +16,46 @@ document.addEventListener("DOMContentLoaded", () => {
   let dishes = [];
   let feedbackData = [];
 
-  const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s"; // Nur die ID, Sheet muss öffentlich sein
+  const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s";
+  const apiKey = "AIzaSyB_X-_j8a_ZYja3WP21VOw0UrvRc2c9hCw"; // Public API key for Google Sheets API v4
 
   // -------------------------
-  // Tabletop.js laden
+  // Google Sheets API v4 laden
   // -------------------------
-  const script = document.createElement("script");
-  script.src = "https://cdn.jsdelivr.net/npm/tabletop@1.6.0/src/tabletop.min.js";
-  script.onload = init;
-  document.body.appendChild(script);
-
   function init() {
-    Tabletop.init({
-      key: sheetID,
-      simpleSheet: true,
-      callback: data => {
-        dishes = data;
+    const sheetName = "Sheet1"; // Change this to your sheet name if different
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}?key=${apiKey}`;
+    
+    fetch(url)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.json();
+      })
+      .then(data => {
+        const rows = data.values;
+        if (!rows || rows.length === 0) {
+          console.error("Keine Daten in der Google Sheet gefunden");
+          return;
+        }
+        
+        // Convert rows to objects using first row as headers
+        const headers = rows[0];
+        dishes = rows.slice(1).map(row => {
+          const obj = {};
+          headers.forEach((header, idx) => {
+            obj[header] = row[idx] || '';
+          });
+          return obj;
+        });
+        
         displayDishes();
         selectTodayDish();
-      },
-      error: () => console.error("Fehler beim Laden der Google Sheets. Stelle sicher, dass die Sheet öffentlich ist!")
-    });
+      })
+      .catch(error => console.error("Fehler beim Laden der Google Sheets:", error));
   }
+
+  // Start loading data
+  init();
 
   function displayDishes() {
     menuList.innerHTML = '';
