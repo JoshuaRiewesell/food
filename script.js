@@ -23,9 +23,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------
   // Apps Script Deployment URL
   // -------------------------
-  const developmentId = "AKfycbyzp0_FNsRCQ2vsiLAbu4L5Hwwj18uDsZqO8muTxvmwmNOkiyml8dlTi_ZGSTmMBRvkWw"
+  const developmentId = "AKfycbxejqRlnbv7eU8ctKxQF0yGnbOX6TOZtTst6KeErTZhIdaHJHgXYOpdaLWlZtKvMWWdwA"
   const appsScriptUrl = `https://script.google.com/macros/d/${developmentId}/usercopy`;
-  // https://script.google.com/macros/s/AKfycbyzp0_FNsRCQ2vsiLAbu4L5Hwwj18uDsZqO8muTxvmwmNOkiyml8dlTi_ZGSTmMBRvkWw/exec
 
   // -------------------------
   // Google Sheets CSV Export laden
