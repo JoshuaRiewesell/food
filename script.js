@@ -297,7 +297,9 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.type = "button";
       btn.className = "chip";
       btn.textContent = label;
-      btn.setAttribute("aria-pressed", "false");
+      const isSelected = selectedChips.has(label);
+      if (isSelected) btn.classList.add("is-selected");
+      btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
 
       btn.addEventListener("pointerdown", e => {
         // Avoid focus-induced scroll jumps on click/tap
@@ -387,7 +389,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const containerWidth = menuList.offsetWidth;
         const itemWidth = selectedItem.offsetWidth;
         const itemLeft = selectedItem.offsetLeft;
-        const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2) + menuList.scrollLeft;
+        const unclampedScrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2);
+        const maxScrollLeft = Math.max(0, menuList.scrollWidth - menuList.clientWidth);
+        const scrollPosition = Math.min(maxScrollLeft, Math.max(0, unclampedScrollPosition));
         
         menuList.scrollTo({
           left: scrollPosition,
@@ -424,6 +428,22 @@ document.addEventListener("DOMContentLoaded", () => {
     else selectDish(0);
   }
 
+  const submitBtn = document.getElementById("feedback-submit");
+  const submitBtnInitialLabel = submitBtn ? submitBtn.textContent : "";
+
+  function setSubmitLoading(isLoading) {
+    if (!submitBtn) return;
+    if (isLoading) {
+      submitBtn.disabled = true;
+      submitBtn.classList.add("is-loading");
+      submitBtn.innerHTML = '<span class="loading-dots" aria-label="Senden..."><span>.</span><span>.</span><span>.</span></span>';
+    } else {
+      submitBtn.classList.remove("is-loading");
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtnInitialLabel;
+    }
+  }
+
   // Feedbackformular submit
   // -------------------------
   feedbackForm.addEventListener("submit", e => {
@@ -450,6 +470,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log("Sende Feedback zum Apps Script:", Object.fromEntries(data));
 
+    setSubmitLoading(true);
+
     fetch(appsScriptUrl, { 
       method: "POST", 
       mode: "no-cors",
@@ -474,7 +496,10 @@ document.addEventListener("DOMContentLoaded", () => {
         feedbackForm.style.display = "block";
         resultDiv.style.display = "none";
       })
-      .catch(error => console.error("Fehler beim Absenden:", error));
+      .catch(error => {
+        console.error("Fehler beim Absenden:", error);
+        setSubmitLoading(false);
+      });
   });
 
   function spawnStarBurst(count) {

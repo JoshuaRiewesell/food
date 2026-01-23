@@ -102,6 +102,36 @@ textarea { width:100%; margin-top:0.2rem; padding:0.3rem; }
 
 button { margin-top:0.5rem; padding:0.5rem 1rem; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer; }
 button:hover { background:#45a049; }
+.form-actions button:disabled {
+  opacity:0.75;
+  cursor:not-allowed;
+}
+
+button.is-loading {
+  opacity:0.75;
+}
+
+.loading-dots {
+  display:inline-flex;
+  gap:0.15rem;
+  align-items:center;
+  justify-content:center;
+  min-width:1.6rem;
+}
+
+.loading-dots span {
+  color:rgba(255,255,255,0.6);
+  animation: loadingDotPulse 900ms infinite ease-in-out;
+}
+
+.loading-dots span:nth-child(2) { animation-delay: 150ms; }
+.loading-dots span:nth-child(3) { animation-delay: 300ms; }
+
+@keyframes loadingDotPulse {
+  0%, 100% { color: rgba(255,255,255,0.55); }
+  50% { color: rgba(255,255,255,0.95); }
+}
+
 .form-actions {
   display:flex;
   justify-content:flex-end;
