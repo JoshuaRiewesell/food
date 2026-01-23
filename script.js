@@ -77,7 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData(feedbackForm);
     const dish = formData.get("dish");
 
-    const formUrl = "https://docs.google.com/forms/d/e/DEINE_FORM_ID/formResponse";
+    const formId = "1f4zjyTaN2oXKcNXf0BxDbNo9EkRT6nm6GzNc2rie4RY"; // Deine Google Form ID
+
+    const formUrl = `https://docs.google.com/forms/d/e/${formId}/formResponse`;
     const data = new URLSearchParams();
     data.append("entry.1111111111", formData.get("overall"));
     data.append("entry.2222222222", formData.get("food"));
