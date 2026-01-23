@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("  Food App v1.1.0 - Loaded at", new Date().toLocaleTimeString());
+  console.log("  Food App v1.1.1 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -14,7 +14,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const avgFoodElem = document.getElementById("avg-food");
   const avgWaitElem = document.getElementById("avg-wait");
   const recentCommentsElem = document.getElementById("recent-comments");
-  const dateElem = document.getElementById("date");
+  const feedbackSubmittedAtElem = document.getElementById("feedback-submitted-at");
+  const commentField = document.getElementById("feedback-comment");
 
   const fallbackChipsOptions = [
     "zu salzig",
@@ -30,7 +31,73 @@ document.addEventListener("DOMContentLoaded", () => {
   const selectedChips = new Set();
   
   const today = new Date();
-  dateElem.textContent = today.toLocaleDateString();
+  const LOCAL_STORAGE_KEY = "foodApp.feedbackByDish.v1";
+
+  function readFeedbackStore() {
+    try {
+      const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== "object") return {};
+      return parsed;
+    } catch {
+      return {};
+    }
+  }
+
+  function writeFeedbackStore(store) {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(store || {}));
+    } catch {
+      // ignore
+    }
+  }
+
+  function formatGermanDateFromISO(isoString) {
+    const dt = isoString ? new Date(isoString) : new Date();
+    if (Number.isNaN(dt.getTime())) return "";
+    return dt.toLocaleDateString("de-DE");
+  }
+
+  function lockFeedbackForm(isLocked) {
+    if (!feedbackForm) return;
+    const controls = feedbackForm.querySelectorAll("button, textarea, input");
+    controls.forEach(el => {
+      if (el.type === "hidden") return;
+      el.disabled = Boolean(isLocked);
+    });
+
+    if (feedbackSubmittedAtElem) {
+      feedbackSubmittedAtElem.style.display = isLocked ? "block" : "none";
+    }
+  }
+
+  function applyStoredFeedbackIfAny(dishId) {
+    const store = readFeedbackStore();
+    const entry = store?.[dishId];
+
+    if (!entry) {
+      if (feedbackSubmittedAtElem) feedbackSubmittedAtElem.style.display = "none";
+      lockFeedbackForm(false);
+      return;
+    }
+
+    if (ratingOverallInput) ratingOverallInput.value = entry.overall ?? "";
+    refreshStarRatings();
+
+    selectedChips.clear();
+    (entry.chips || []).forEach(c => selectedChips.add(c));
+    renderChips();
+
+    if (commentField) commentField.value = entry.comment ?? "";
+
+    if (feedbackSubmittedAtElem) {
+      const formatted = formatGermanDateFromISO(entry.submittedAt);
+      feedbackSubmittedAtElem.textContent = formatted ? `Feedback abgegeben am ${formatted}` : "Feedback abgegeben";
+    }
+
+    lockFeedbackForm(true);
+  }
   
   // Helper function to format date with German day names
   function formatDate(date) {
@@ -320,6 +387,11 @@ document.addEventListener("DOMContentLoaded", () => {
     refreshStarRatings();
     selectedChips.clear();
     renderChips();
+    if (commentField) {
+      commentField.placeholder = "Kurzfeedback...";
+      commentField.value = "";
+    }
+    applyStoredFeedbackIfAny(dish);
     updateFeedbackAnalysis(dish);
   }
 
@@ -336,6 +408,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------
   feedbackForm.addEventListener("submit", e => {
     e.preventDefault();
+
+    const dishIdForLock = feedbackDishIdInput?.value || feedbackDishInput?.value;
+    if (dishIdForLock) {
+      const existing = readFeedbackStore()?.[dishIdForLock];
+      if (existing) return;
+    }
+
     const formData = new FormData(feedbackForm);
     const dish = formData.get("dish");
     const dishId = formData.get("dishId");
@@ -358,12 +437,68 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then(() => {
         console.log("Feedback erfolgreich gesendet!");
+
+        const submittedAtIso = new Date().toISOString();
+        const store = readFeedbackStore();
+        store[dishId] = {
+          submittedAt: submittedAtIso,
+          overall: overall ?? "",
+          chips: Array.from(selectedChips),
+          comment: (formData.get("comment") || "").toString()
+        };
+        writeFeedbackStore(store);
+
+        spawnStarBurst(70);
+
+        applyStoredFeedbackIfAny(dishId);
         feedbackForm.style.display = "none";
         resultDiv.style.display = "block";
         updateFeedbackAnalysis(dish);
       })
       .catch(error => console.error("Fehler beim Absenden:", error));
   });
+
+  function spawnStarBurst(count) {
+    const root = document.body;
+    if (!root) return;
+
+    const origin = document.getElementById("feedback-section");
+    const rect = origin ? origin.getBoundingClientRect() : { left: window.innerWidth / 2, top: window.innerHeight / 2, width: 0, height: 0 };
+    const startX = rect.left + rect.width / 2;
+    const startY = rect.top + 80;
+
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement("div");
+      el.textContent = "★";
+      el.style.position = "fixed";
+      el.style.left = `${startX}px`;
+      el.style.top = `${startY}px`;
+      el.style.color = "#f5b301";
+      el.style.fontSize = `${12 + Math.random() * 18}px`;
+      el.style.pointerEvents = "none";
+      el.style.zIndex = "9999";
+      el.style.willChange = "transform, opacity";
+
+      const angle = Math.random() * Math.PI * 2;
+      const distance = 120 + Math.random() * 360;
+      const dx = Math.cos(angle) * distance;
+      const dy = Math.sin(angle) * distance - (100 + Math.random() * 220);
+      const rot = (Math.random() * 720 - 360).toFixed(0);
+      const duration = 900 + Math.random() * 700;
+
+      root.appendChild(el);
+
+      const anim = el.animate(
+        [
+          { transform: "translate(0, 0) rotate(0deg)", opacity: 1 },
+          { transform: `translate(${dx}px, ${dy}px) rotate(${rot}deg)`, opacity: 0 }
+        ],
+        { duration, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }
+      );
+
+      anim.addEventListener("finish", () => el.remove());
+    }
+  }
 
   // -------------------------
   // Feedbackanalyse visualisieren

@@ -1,11 +1,11 @@
 body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f2f2f2; }
 header { text-align:center; padding:2rem 1rem 1rem 1rem; background:transparent; }
 header img { width:100%; object-fit:contain; }
-#date { font-size:0.9rem; }
 
 section { background:white; margin:1rem 0; padding:1rem; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
 #menu-section { background:transparent; margin:0; padding:0 1rem 0 1rem; box-shadow:none; }
 #feedback-section { background:white; margin:1rem; padding:1rem; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.2); }
+#menu-section h2 { margin-bottom:0.25rem; }
 #menu-list { display:flex; overflow-x:auto; gap:1rem; padding:1rem 1rem 1.5rem 1rem; margin:0 -1rem; scroll-snap-type:x mandatory; -webkit-overflow-scrolling:touch; justify-content:flex-start; scroll-padding-left:1rem; scroll-padding-right:1rem; }
 #menu-list::-webkit-scrollbar { height:8px; }
 #menu-list::-webkit-scrollbar-track { background:#f1f1f1; border-radius:10px; }
@@ -76,21 +76,50 @@ section { background:white; margin:1rem 0; padding:1rem; border-radius:10px; box
 }
 
 label { display:block; margin-top:0.5rem; }
-select, textarea { width:100%; margin-top:0.2rem; padding:0.3rem; }
+select { width:100%; margin-top:0.2rem; padding:0.3rem; }
+textarea { width:100%; margin-top:0.2rem; padding:0.3rem; }
+.comment-field {
+  width:100%;
+  box-sizing:border-box;
+  margin-top:0.75rem;
+  padding:0.9rem 1rem;
+  border-radius:12px;
+  border:1px solid #e0e0e0;
+  background:#fafafa;
+  min-height:110px;
+  resize:vertical;
+  font:inherit;
+  line-height:1.4;
+  outline:none;
+  transition:border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.comment-field:focus {
+  border-color:#4CAF50;
+  background:#ffffff;
+  box-shadow:0 0 0 3px rgba(76,175,80,0.18);
+}
+
 button { margin-top:0.5rem; padding:0.5rem 1rem; background:#4CAF50; color:white; border:none; border-radius:5px; cursor:pointer; }
 button:hover { background:#45a049; }
+.form-actions {
+  display:flex;
+  justify-content:flex-end;
+}
 
 .chips { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.35rem; }
 .chip { margin:0; background:#f0f0f0; color:#333; border:1px solid #ddd; padding:0.4rem 0.7rem; border-radius:999px; }
 .chip:hover { background:#e8e8e8; }
 .chip.is-selected { background:#4CAF50; color:white; border-color:#4CAF50; }
 
-.star-rating { display:inline-flex; gap:0.25rem; margin-top:0.35rem; align-items:center; }
-.star-btn { margin:0; padding:0; background:transparent; border:none; cursor:pointer; line-height:0; }
+.star-rating { display:flex; gap:0.25rem; margin:0.25rem 0 0.25rem 0; align-items:center; width:100%; }
+.star-btn { margin:0; padding:0; background:transparent; border:none; cursor:pointer; line-height:0; flex:1; display:flex; justify-content:center; }
 .star-btn:hover { background:transparent; }
-.star-icon { width:26px; height:26px; display:block; }
+.star-icon { width:100%; height:auto; max-width:34px; display:block; }
 .star-icon path { fill:#d6d6d6; transition:fill 120ms ease; }
 .star-btn.is-filled .star-icon path { fill:#f5b301; }
+
+#feedback-submitted-at { margin:0.25rem 0 0.75rem 0; font-size:0.9rem; color:#666; }
 
 .star-bar { margin:0.5rem 0; height:20px; background:#ddd; border-radius:10px; position:relative; }
 .star-bar-inner { height:100%; border-radius:10px; background:#4CAF50; text-align:right; color:white; padding-right:5px; font-size:12px; line-height:20px; }
