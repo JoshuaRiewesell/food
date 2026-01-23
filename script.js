@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.2 - Loaded at", new Date().toLocaleTimeString());
+  console.log("🍽️  Food App v1.0.3 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -44,6 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Parse header
     const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    console.log("CSV Headers:", headers);
     
     // Parse rows
     dishes = lines.slice(1).map(line => {
@@ -54,6 +55,13 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       return obj;
     }).filter(row => Object.values(row).some(v => v)); // Remove empty rows
+
+    console.log(`${dishes.length} Gerichte geladen:`, dishes);
+    
+    if (dishes.length === 0) {
+      console.error("Keine gültigen Gerichte in der Google Sheet gefunden");
+      return;
+    }
 
     displayDishes();
     selectTodayDish();
@@ -75,6 +83,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function selectDish(idx) {
+    // Safety check: ensure dishes array has data
+    if (!dishes || dishes.length === 0) {
+      console.error("Keine Gerichte geladen");
+      return;
+    }
+    
+    // Ensure idx is valid
+    if (idx < 0 || idx >= dishes.length) {
+      console.error(`Ungültiger Index: ${idx}, verfügbare Gerichte: ${dishes.length}`);
+      return;
+    }
+    
     // Remove selected class from all items safely
     dishes.forEach((_, i) => {
       if (menuList.children[i]) {
