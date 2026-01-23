@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let chipsOptions = [];
   const selectedChips = new Set();
+  let selectedDishIdx = null;
   
   const today = new Date();
   const LOCAL_STORAGE_KEY = "foodApp.feedbackByDish.v1";
@@ -69,6 +70,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (feedbackSubmittedAtElem) {
       feedbackSubmittedAtElem.style.display = isLocked ? "block" : "none";
+    }
+
+    const submitBtn = document.getElementById("feedback-submit");
+    if (submitBtn) {
+      submitBtn.style.display = isLocked ? "none" : "inline-flex";
     }
   }
 
@@ -293,7 +299,13 @@ document.addEventListener("DOMContentLoaded", () => {
       btn.textContent = label;
       btn.setAttribute("aria-pressed", "false");
 
-      btn.addEventListener("click", () => {
+      btn.addEventListener("pointerdown", e => {
+        // Avoid focus-induced scroll jumps on click/tap
+        e.preventDefault();
+      }, { passive: false });
+
+      btn.addEventListener("click", e => {
+        e.preventDefault();
         if (selectedChips.has(label)) {
           selectedChips.delete(label);
           btn.classList.remove("is-selected");
@@ -304,6 +316,8 @@ document.addEventListener("DOMContentLoaded", () => {
           btn.setAttribute("aria-pressed", "true");
         }
         syncChipsHiddenInput();
+
+        btn.blur();
       });
 
       chipsContainer.appendChild(btn);
@@ -335,12 +349,12 @@ document.addEventListener("DOMContentLoaded", () => {
       div.className = "menu-item";
       div.dataset.idx = idx;
       div.innerHTML = `<div class="date-small">${row.datumObj.toLocaleDateString()}</div><strong>${formatDate(row.datumObj)}</strong><div class="dish-name">${row.Gericht}</div>`;
-      div.addEventListener("click", () => selectDish(idx));
+      div.addEventListener("click", () => selectDish(idx, { userInitiated: true }));
       menuList.appendChild(div);
     });
   }
 
-  function selectDish(idx) {
+  function selectDish(idx, options = {}) {
     // Safety check: ensure dishes array has data
     if (!dishes || dishes.length === 0) {
       console.error("Keine Gerichte geladen");
@@ -364,18 +378,25 @@ document.addEventListener("DOMContentLoaded", () => {
     if (menuList.children[idx]) {
       menuList.children[idx].classList.add("selected");
       
-      // Scroll the selected item into center view
-      const selectedItem = menuList.children[idx];
-      const containerWidth = menuList.offsetWidth;
-      const itemWidth = selectedItem.offsetWidth;
-      const itemLeft = selectedItem.offsetLeft;
-      const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2) + menuList.scrollLeft;
-      
-      menuList.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
+      const isRepeatSelection = selectedDishIdx === idx;
+      const shouldScroll = !(options.userInitiated && isRepeatSelection);
+
+      if (shouldScroll) {
+        // Scroll the selected item into center view
+        const selectedItem = menuList.children[idx];
+        const containerWidth = menuList.offsetWidth;
+        const itemWidth = selectedItem.offsetWidth;
+        const itemLeft = selectedItem.offsetLeft;
+        const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2) + menuList.scrollLeft;
+        
+        menuList.scrollTo({
+          left: scrollPosition,
+          behavior: 'smooth'
+        });
+      }
     }
+
+    selectedDishIdx = idx;
     
     const dish = dishes[idx].Gericht;
     currentDishElem.textContent = dish;
@@ -392,7 +413,6 @@ document.addEventListener("DOMContentLoaded", () => {
       commentField.value = "";
     }
     applyStoredFeedbackIfAny(dish);
-    updateFeedbackAnalysis(dish);
   }
 
   function selectTodayDish() {
@@ -451,9 +471,8 @@ document.addEventListener("DOMContentLoaded", () => {
         spawnStarBurst(70);
 
         applyStoredFeedbackIfAny(dishId);
-        feedbackForm.style.display = "none";
-        resultDiv.style.display = "block";
-        updateFeedbackAnalysis(dish);
+        feedbackForm.style.display = "block";
+        resultDiv.style.display = "none";
       })
       .catch(error => console.error("Fehler beim Absenden:", error));
   });

@@ -18,7 +18,6 @@
 
 <section id="feedback-section">
   <h2>Feedback für: <span id="current-dish">Lade...</span></h2>
-  <div id="feedback-submitted-at" style="display:none;"></div>
   <form id="feedback-form">
     <input type="hidden" name="dishId" id="feedback-dish-id">
     <input type="hidden" name="dish" id="feedback-dish">
@@ -45,6 +44,7 @@
     <textarea name="comment" id="feedback-comment" class="comment-field"></textarea>
 
     <div class="form-actions">
+      <div id="feedback-submitted-at" style="display:none;"></div>
       <button type="submit" id="feedback-submit">Feedback senden</button>
     </div>
   </form>
