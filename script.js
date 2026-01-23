@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.7 - Loaded at", new Date().toLocaleTimeString());
+  console.log("🍽️  Food App v1.0.8 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -83,7 +83,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.className = "menu-item";
       div.dataset.idx = idx;
-      div.innerHTML = `<strong>${row.Datum.toLocaleDateString()}</strong><br>${row.Gericht}`;
+      const date = new Date((row.Datum - 25569) * 86400 * 1000);
+      const formattedDate = date.toLocaleDateString();
+      div.innerHTML = `<strong>${formattedDate}</strong><br>${row.Gericht}`;
       div.addEventListener("click", () => selectDish(idx));
       menuList.appendChild(div);
     });

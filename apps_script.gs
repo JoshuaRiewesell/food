@@ -8,11 +8,13 @@ const FORM_RESPONSES_SHEET = "Form_Responses";
 function doPost(e) {
   try {
     const params = e.parameter;
+    Logger.log("Received params: " + JSON.stringify(params));
     
     const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
     const feedbackSheet = spreadsheet.getSheetByName(FEEDBACK_SHEET_NAME);
     
     if (!feedbackSheet) {
+      Logger.log("Feedback Sheet nicht gefunden");
       return createResponse(false, "Feedback Sheet nicht gefunden");
     }
 
@@ -20,11 +22,16 @@ function doPost(e) {
     let responseSheet = feedbackSheet.getSheetByName(FORM_RESPONSES_SHEET);
     
     if (!responseSheet) {
+      Logger.log("Form_Responses Sheet nicht gefunden. Verfügbare Sheets:");
+      const sheets = feedbackSheet.getSheets();
+      sheets.forEach(s => Logger.log("- " + s.getName()));
       return createResponse(false, "Form_Responses Sheet nicht gefunden");
     }
 
+    Logger.log("Form_Responses Sheet gefunden. Füge Zeile hinzu...");
+
     // Daten in Form_Responses hinzufügen
-    responseSheet.appendRow([
+    const row = [
       new Date().toLocaleString("de-DE"),  // Zeitstempel
       "",                                   // E-Mail (optional)
       params.dish || "",                    // Gericht
@@ -32,12 +39,17 @@ function doPost(e) {
       params.food || "",                    // Essen
       params.wait || "",                    // Wartezeit
       params.comment || ""                  // Kommentar
-    ]);
+    ];
+    
+    Logger.log("Row to append: " + JSON.stringify(row));
+    responseSheet.appendRow(row);
+    Logger.log("Zeile erfolgreich hinzugefügt");
 
     return createResponse(true, "Feedback erfolgreich gespeichert");
 
   } catch (error) {
     Logger.log("Error: " + error.toString());
+    Logger.log("Stack: " + error.stack);
     return createResponse(false, "Fehler: " + error.toString());
   }
 }
