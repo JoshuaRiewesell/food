@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("  Food App v1.1.1 - Loaded at", new Date().toLocaleTimeString());
+  console.log("  Food App v1.1.2 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -227,9 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g, ""));
+    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g, "").replace(/\r/g, "").trim());
     allFeedbackRows = lines.slice(1).map(line => {
-      const values = parseCsvLine(line).map(v => v.replace(/^"|"$/g, ""));
+      const values = parseCsvLine(line).map(v => v.replace(/^"|"$/g, "").replace(/\r/g, "").trim());
       const obj = {};
       headers.forEach((header, idx) => {
         obj[header] = values[idx] || "";
@@ -237,9 +237,11 @@ document.addEventListener("DOMContentLoaded", () => {
       return obj;
     }).filter(row => Object.values(row).some(v => v));
 
-    if (selectedDishIdx != null && dishes[selectedDishIdx]) {
-      const currentId = String(dishes[selectedDishIdx].GerichtsId || "").trim();
-      if (currentId) renderDishEvaluation(currentId, selectedDishIdx);
+    if (Array.isArray(dishes) && dishes.length) {
+      dishes.forEach((dish, idx) => {
+        const dishId = String(dish?.GerichtsId || "").trim() || String(dish?.Gericht || "").trim();
+        if (dishId) renderDishEvaluation(dishId, idx);
+      });
     }
   }
 
@@ -452,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .map(r => parseRatingValue(r.Gesamtbewertung || r.overall || r.Gesamt || r.Rating || ""))
       .filter(v => Number.isFinite(v));
 
-    const count = rows.length;
+    const count = ratings.length;
     if (ratings.length === 0) return { count, avg: null, rounded: 0 };
     const sum = ratings.reduce((a, b) => a + b, 0);
     const avg = sum / ratings.length;
