@@ -14,6 +14,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const today = new Date();
   dateElem.textContent = today.toLocaleDateString();
+  
+  // Helper function to format date with German day names
+  function formatDate(date) {
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    // Check for special days
+    if (date.toDateString() === today.toDateString()) {
+      return "Heute";
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return "Gestern";
+    } else if (date.toDateString() === tomorrow.toDateString()) {
+      return "Morgen";
+    }
+    
+    // German day names
+    const dayNames = ["Sonntag", "Montag", "Dienstag", "Mittwoch", "Donnerstag", "Freitag", "Samstag"];
+    const dayName = dayNames[date.getDay()];
+    
+    return dayName;
+  }
 
   let dishes = [];
   let feedbackData = [];
@@ -104,7 +128,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.className = "menu-item";
       div.dataset.idx = idx;
-      div.innerHTML = `<strong>${row.datumObj.toLocaleDateString()}</strong><div class="dish-name">${row.Gericht}</div>`;
+      div.innerHTML = `<div class="date-small">${row.datumObj.toLocaleDateString()}</div><strong>${formatDate(row.datumObj)}</strong><div class="dish-name">${row.Gericht}</div>`;
       div.addEventListener("click", () => selectDish(idx));
       menuList.appendChild(div);
     });
