@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
     
     if (dishes.length === 0) {
       console.error("Keine gültigen Gerichte in der Google Sheet gefunden");
+      menuList.innerHTML = '<p style="padding: 2rem; text-align: center; color: #666;">Keine Gerichte gefunden</p>';
       return;
     }
 
@@ -73,7 +74,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Start loading data
+  showLoadingSkeletons();
   init();
+
+  function showLoadingSkeletons() {
+    menuList.innerHTML = '';
+    for (let i = 0; i < 3; i++) {
+      const skeleton = document.createElement("div");
+      skeleton.className = "skeleton-card";
+      skeleton.innerHTML = `
+        <div class="skeleton skeleton-date"></div>
+        <div class="skeleton skeleton-dish"></div>
+        <div class="skeleton skeleton-dish"></div>
+      `;
+      menuList.appendChild(skeleton);
+    }
+  }
 
   function displayDishes() {
     menuList.innerHTML = '';
@@ -83,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       div.dataset.idx = idx;
       const [day, month, year] = row.Datum.split('.'); // split by dots
       const date = new Date(year, month - 1, day);     // month is 0-indexed in JS
-      div.innerHTML = `<strong>${date.toLocaleDateString()}</strong><br>${row.Gericht}`;
+      div.innerHTML = `<strong>${date.toLocaleDateString()}</strong><div class="dish-name">${row.Gericht}</div>`;
       div.addEventListener("click", () => selectDish(idx));
       menuList.appendChild(div);
     });
