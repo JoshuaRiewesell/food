@@ -1,8 +1,9 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("  Food App v1.1.2 - Loaded at", new Date().toLocaleTimeString());
+  console.log("  Food App v1.1.3 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
+  const feedbackSection = document.getElementById("feedback-section");
   const feedbackForm = document.getElementById("feedback-form");
   const feedbackDishIdInput = document.getElementById("feedback-dish-id");
   const feedbackDishInput = document.getElementById("feedback-dish");
@@ -93,10 +94,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function formatGermanDate(dt) {
+    const d = dt instanceof Date ? dt : new Date(dt);
+    if (Number.isNaN(d.getTime())) return "";
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear());
+    return `${day}.${month}.${year}`;
+  }
+
   function formatGermanDateFromISO(isoString) {
     const dt = isoString ? new Date(isoString) : new Date();
     if (Number.isNaN(dt.getTime())) return "";
-    return dt.toLocaleDateString("de-DE");
+    return formatGermanDate(dt);
   }
 
   function lockFeedbackForm(isLocked) {
@@ -428,7 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.className = "menu-item";
       div.dataset.idx = idx;
-      div.innerHTML = `<div class="date-small">${row.datumObj.toLocaleDateString()}</div><strong>${formatDate(row.datumObj)}</strong><div class="dish-name">${row.Gericht}</div>`;
+      div.innerHTML = `<div class="date-small">${formatGermanDate(row.datumObj)}</div><strong>${formatDate(row.datumObj)}</strong><div class="dish-name">${row.Gericht}</div>`;
       div.addEventListener("click", () => selectDish(idx, { userInitiated: true }));
       menuList.appendChild(div);
     });
@@ -543,9 +553,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const dishDate = dishes[idx].datumObj ? startOfDay(dishes[idx].datumObj) : null;
     const isFutureDish = dishDate ? dishDate.getTime() > startOfDay(today).getTime() : false;
     if (isFutureDish) {
-      feedbackForm.style.display = "none";
+      if (feedbackSection) feedbackSection.style.display = "none";
     } else {
-      feedbackForm.style.display = "block";
+      if (feedbackSection) feedbackSection.style.display = "block";
     }
 
     setSubmitLoading(false);
