@@ -28,12 +28,11 @@ function doPost(e) {
       return createResponse(false, "Form_Responses Sheet nicht gefunden");
     }
 
-    Logger.log("Form_Responses Sheet gefunden. Füge Zeile hinzu...");
+    Logger.log("Feedback Sheet gefunden. Füge Zeile hinzu...");
 
     // Daten in Form_Responses hinzufügen
     const row = [
       new Date().toLocaleString("de-DE"),  // Zeitstempel
-      "",                                   // E-Mail (optional)
       params.dish || "",                    // Gericht
       params.overall || "",                 // Gesamtbewertung
       params.food || "",                    // Essen
