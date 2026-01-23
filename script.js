@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.9 - Loaded at", new Date().toLocaleTimeString());
+  console.log("🍽️  Food App v1.0.10 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -23,8 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------
   // Apps Script Deployment URL
   // -------------------------
-  const developmentId = "AKfycbxejqRlnbv7eU8ctKxQF0yGnbOX6TOZtTst6KeErTZhIdaHJHgXYOpdaLWlZtKvMWWdwA"
-  const appsScriptUrl = `https://script.google.com/macros/d/${developmentId}/usercopy`;
+  const appsScriptUrl = `https://script.google.com/macros/s/AKfycbyhjJGkIPchRfFF98s_EzOkXqI1boRyi3eQuOslgworozhGM0ayiljINU4JnvM7a-tZ1Q/exec`;
 
   // -------------------------
   // Google Sheets CSV Export laden
