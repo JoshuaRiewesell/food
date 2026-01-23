@@ -1,4 +1,4 @@
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f2f2f2; }
+body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f2f2f2; -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none; -webkit-touch-callout:none; -webkit-tap-highlight-color:transparent; }
 header { text-align:center; padding:2rem 1rem 1rem 1rem; background:transparent; }
 header img { width:100%; object-fit:contain; }
 
@@ -112,7 +112,7 @@ section { background:white; margin:1rem 0; padding:1rem; border-radius:10px; box
 
 label { display:block; margin-top:0.5rem; }
 select { width:100%; margin-top:0.2rem; padding:0.3rem; }
-textarea { width:100%; margin-top:0.2rem; padding:0.3rem; }
+textarea { width:100%; margin-top:0.2rem; padding:0.3rem; -webkit-user-select:text; -moz-user-select:text; -ms-user-select:text; user-select:text; }
 .comment-field {
   width:100%;
   box-sizing:border-box;
@@ -127,6 +127,10 @@ textarea { width:100%; margin-top:0.2rem; padding:0.3rem; }
   line-height:1.4;
   outline:none;
   transition:border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+  -webkit-user-select:text;
+  -moz-user-select:text;
+  -ms-user-select:text;
+  user-select:text;
 }
 
 .comment-field:focus {
