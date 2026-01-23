@@ -58,6 +58,13 @@ document.addEventListener("DOMContentLoaded", () => {
       headers.forEach((header, idx) => {
         obj[header] = values[idx] || '';
       });
+      
+      // Convert date string to Date object
+      if (obj.Datum) {
+        const [day, month, year] = obj.Datum.split('.');
+        obj.datumObj = new Date(year, month - 1, day);
+      }
+      
       return obj;
     }).filter(row => Object.values(row).some(v => v)); // Remove empty rows
 
@@ -97,9 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const div = document.createElement("div");
       div.className = "menu-item";
       div.dataset.idx = idx;
-      const [day, month, year] = row.Datum.split('.'); // split by dots
-      const date = new Date(year, month - 1, day);     // month is 0-indexed in JS
-      div.innerHTML = `<strong>${date.toLocaleDateString()}</strong><div class="dish-name">${row.Gericht}</div>`;
+      div.innerHTML = `<strong>${row.datumObj.toLocaleDateString()}</strong><div class="dish-name">${row.Gericht}</div>`;
       div.addEventListener("click", () => selectDish(idx));
       menuList.appendChild(div);
     });
@@ -139,8 +144,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function selectTodayDish() {
-    const todayStr = today.toISOString().split('T')[0];
-    const idx = dishes.findIndex(d => d.Datum.startsWith(todayStr));
+    const idx = dishes.findIndex(d => {
+      if (!d.datumObj) return false;
+      return d.datumObj.toDateString() === today.toDateString();
+    });
     if(idx >= 0) selectDish(idx);
     else selectDish(0);
   }
