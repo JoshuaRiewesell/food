@@ -21,16 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s";
 
   // -------------------------
-  // Google Form Konfiguration
+  // Apps Script Deployment URL
   // -------------------------
-  const formId = "1f4zjyTaN2oXKcNXf0BxDbNo9EkRT6nm6GzNc2rie4RY";
-  const formEntryIds = {
-    overall: "entry.1250813182",
-    food: "entry.207920365",
-    wait: "entry.54224442",
-    dish: "entry.599666163",
-    comment: "entry.931221081"
-  };
+  const developmentId = "AKfycbyzp0_FNsRCQ2vsiLAbu4L5Hwwj18uDsZqO8muTxvmwmNOkiyml8dlTi_ZGSTmMBRvkWw"
+  const appsScriptUrl = `https://script.google.com/macros/d/${developmentId}/usercopy`;
+  // https://script.google.com/macros/s/AKfycbyzp0_FNsRCQ2vsiLAbu4L5Hwwj18uDsZqO8muTxvmwmNOkiyml8dlTi_ZGSTmMBRvkWw/exec
 
   // -------------------------
   // Google Sheets CSV Export laden
@@ -142,26 +137,20 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData(feedbackForm);
     const dish = formData.get("dish");
 
-    const formUrl = `https://docs.google.com/forms/d/e/${formId}/formResponse`;
     const data = new URLSearchParams();
-    data.append(formEntryIds.overall, formData.get("overall"));
-    data.append(formEntryIds.food, formData.get("food"));
-    data.append(formEntryIds.wait, formData.get("wait"));
-    data.append(formEntryIds.dish, dish);
-    data.append(formEntryIds.comment, formData.get("comment"));
+    data.append("dish", dish);
+    data.append("overall", formData.get("overall"));
+    data.append("food", formData.get("food"));
+    data.append("wait", formData.get("wait"));
+    data.append("comment", formData.get("comment"));
 
-    // Debug: Log was wir abschicken
-    console.log("Sending to Google Form:", {
-      url: formUrl,
-      entries: formEntryIds,
-      data: Object.fromEntries(data)
-    });
+    console.log("Sende Feedback zum Apps Script:", Object.fromEntries(data));
 
-    fetch(formUrl, { method:"POST", mode:"cors", body:data })
-      .then(response => {
-        console.log("Response status:", response.status);
-        return response;
-      })
+    fetch(appsScriptUrl, { 
+      method: "POST", 
+      mode: "no-cors",
+      body: data 
+    })
       .then(() => {
         console.log("Feedback erfolgreich gesendet!");
         feedbackForm.style.display = "none";
