@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.12 - Loaded at", new Date().toLocaleTimeString());
+  console.log("  Food App v1.0.12 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -163,7 +163,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const containerWidth = menuList.offsetWidth;
       const itemWidth = selectedItem.offsetWidth;
       const itemLeft = selectedItem.offsetLeft;
-      const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2);
+      const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2) + menuList.scrollLeft;
       
       menuList.scrollTo({
         left: scrollPosition,
