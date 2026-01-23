@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.3 - Loaded at", new Date().toLocaleTimeString());
+  console.log("🍽️  Food App v1.0.4 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -149,6 +149,13 @@ document.addEventListener("DOMContentLoaded", () => {
     data.append(formEntryIds.wait, formData.get("wait"));
     data.append(formEntryIds.dish, dish);
     data.append(formEntryIds.comment, formData.get("comment"));
+
+    // Debug: Log was wir abschicken
+    console.log("Sending to Google Form:", {
+      url: formUrl,
+      entries: formEntryIds,
+      data: Object.fromEntries(data)
+    });
 
     fetch(formUrl, { method:"POST", mode:"no-cors", body:data })
       .then(() => {
