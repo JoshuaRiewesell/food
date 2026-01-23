@@ -12,6 +12,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const recentCommentsElem = document.getElementById("recent-comments");
   const dateElem = document.getElementById("date");
 
+  const ratingInputs = {
+    overall: document.getElementById("rating-overall"),
+    food: document.getElementById("rating-food"),
+    wait: document.getElementById("rating-wait"),
+  };
+
   const today = new Date();
   dateElem.textContent = today.toLocaleDateString();
   
@@ -108,6 +114,49 @@ document.addEventListener("DOMContentLoaded", () => {
   showLoadingSkeletons();
   init();
 
+  initStarRatings();
+
+  function setStarRating(container, value) {
+    const numericValue = Number(value) || 0;
+    const buttons = Array.from(container.querySelectorAll(".star-btn"));
+    buttons.forEach(btn => {
+      const v = Number(btn.dataset.value);
+      if (v <= numericValue) btn.classList.add("is-filled");
+      else btn.classList.remove("is-filled");
+    });
+  }
+
+  function initStarRatings() {
+    document.querySelectorAll(".star-rating").forEach(container => {
+      if (container.dataset.initialized === "true") return;
+      const key = container.dataset.input;
+      const hiddenInput = ratingInputs[key];
+      if (!hiddenInput) return;
+
+      setStarRating(container, hiddenInput.value);
+
+      container.addEventListener("click", e => {
+        const btn = e.target.closest(".star-btn");
+        if (!btn || !container.contains(btn)) return;
+
+        const value = Number(btn.dataset.value);
+        hiddenInput.value = String(value);
+        setStarRating(container, value);
+      });
+
+      container.dataset.initialized = "true";
+    });
+  }
+
+  function refreshStarRatings() {
+    document.querySelectorAll(".star-rating").forEach(container => {
+      const key = container.dataset.input;
+      const hiddenInput = ratingInputs[key];
+      if (!hiddenInput) return;
+      setStarRating(container, hiddenInput.value);
+    });
+  }
+
   function showLoadingSkeletons() {
     menuList.innerHTML = '';
     for (let i = 0; i < 3; i++) {
@@ -176,6 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackDishInput.value = dish;
     resultDiv.style.display = "none";
     feedbackForm.style.display = "block";
+    Object.values(ratingInputs).forEach(input => {
+      if (input) input.value = "";
+    });
+    refreshStarRatings();
     updateFeedbackAnalysis(dish);
   }
 
