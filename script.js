@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.4 - Loaded at", new Date().toLocaleTimeString());
+  console.log("🍽️  Food App v1.0.5 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -157,7 +157,11 @@ document.addEventListener("DOMContentLoaded", () => {
       data: Object.fromEntries(data)
     });
 
-    fetch(formUrl, { method:"POST", mode:"no-cors", body:data })
+    fetch(formUrl, { method:"POST", mode:"cors", body:data })
+      .then(response => {
+        console.log("Response status:", response.status);
+        return response;
+      })
       .then(() => {
         console.log("Feedback erfolgreich gesendet!");
         feedbackForm.style.display = "none";
