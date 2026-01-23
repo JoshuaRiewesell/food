@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("🍽️  Food App v1.0.1 - Loaded at", new Date().toLocaleTimeString());
+  
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
   const feedbackForm = document.getElementById("feedback-form");
