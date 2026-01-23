@@ -75,8 +75,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function selectDish(idx) {
-    dishes.forEach((_, i) => menuList.children[i].classList.remove("selected"));
-    menuList.children[idx].classList.add("selected");
+    // Remove selected class from all items safely
+    dishes.forEach((_, i) => {
+      if (menuList.children[i]) {
+        menuList.children[i].classList.remove("selected");
+      }
+    });
+    
+    // Add selected class to current item safely
+    if (menuList.children[idx]) {
+      menuList.children[idx].classList.add("selected");
+    }
+    
     const dish = dishes[idx].Gericht;
     currentDishElem.textContent = dish;
     feedbackDishInput.value = dish;
