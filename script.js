@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("🍽️  Food App v1.0.1 - Loaded at", new Date().toLocaleTimeString());
+  console.log("🍽️  Food App v1.0.2 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
@@ -19,41 +19,44 @@ document.addEventListener("DOMContentLoaded", () => {
   let feedbackData = [];
 
   const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s";
-  const apiKey = "AIzaSyB_X-_j8a_ZYja3WP21VOw0UrvRc2c9hCw"; // Public API key for Google Sheets API v4
 
   // -------------------------
-  // Google Sheets API v4 laden
+  // Google Sheets CSV Export laden
   // -------------------------
   function init() {
-    const sheetName = "Sheet1"; // Change this to your sheet name if different
-    const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetID}/values/${sheetName}?key=${apiKey}`;
+    const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/export?format=csv`;
     
-    fetch(url)
+    fetch(csvUrl)
       .then(response => {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        return response.json();
+        return response.text();
       })
-      .then(data => {
-        const rows = data.values;
-        if (!rows || rows.length === 0) {
-          console.error("Keine Daten in der Google Sheet gefunden");
-          return;
-        }
-        
-        // Convert rows to objects using first row as headers
-        const headers = rows[0];
-        dishes = rows.slice(1).map(row => {
-          const obj = {};
-          headers.forEach((header, idx) => {
-            obj[header] = row[idx] || '';
-          });
-          return obj;
-        });
-        
-        displayDishes();
-        selectTodayDish();
-      })
+      .then(csv => parseCSV(csv))
       .catch(error => console.error("Fehler beim Laden der Google Sheets:", error));
+  }
+
+  function parseCSV(csv) {
+    const lines = csv.trim().split('\n');
+    if (lines.length === 0) {
+      console.error("Keine Daten in der Google Sheet gefunden");
+      return;
+    }
+
+    // Parse header
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    
+    // Parse rows
+    dishes = lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      const obj = {};
+      headers.forEach((header, idx) => {
+        obj[header] = values[idx] || '';
+      });
+      return obj;
+    }).filter(row => Object.values(row).some(v => v)); // Remove empty rows
+
+    displayDishes();
+    selectTodayDish();
   }
 
   // Start loading data
