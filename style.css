@@ -23,6 +23,39 @@ section { background:white; margin:1rem 0; padding:1rem; border-radius:10px; box
 .menu-item.selected .date-small { color:rgba(255,255,255,0.8); }
 .menu-item .dish-name { font-size:1rem; line-height:1.4; font-weight:500; }
 
+.dish-evaluation {
+  position:absolute;
+  top:12px;
+  right:12px;
+  display:none;
+  align-items:center;
+  gap:0.35rem;
+  padding:0.35rem 0.55rem;
+  border-radius:999px;
+  background:rgba(255,255,255,0.92);
+  border:1px solid rgba(0,0,0,0.08);
+  box-shadow:0 2px 10px rgba(0,0,0,0.08);
+  font-size:0.85rem;
+  color:#222;
+}
+
+.menu-item.selected .dish-evaluation {
+  background:rgba(255,255,255,0.18);
+  border-color:rgba(255,255,255,0.35);
+  color:#fff;
+}
+
+.dish-evaluation-stars {
+  letter-spacing:0.06em;
+  color:#f5b301;
+  font-size:0.95rem;
+  line-height:1;
+}
+
+.menu-item.selected .dish-evaluation-stars {
+  color:#fff;
+}
+
 /* Shimmer Skeleton Loader */
 .skeleton {
   background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);

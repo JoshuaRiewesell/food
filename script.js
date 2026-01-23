@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let selectedDishIdx = null;
   
   const today = new Date();
-  const LOCAL_STORAGE_KEY = "foodApp.feedbackByDish.v1";
+  const LOCAL_STORAGE_KEY = "foodApp.feedbackByDish.v2";
 
   function readFeedbackStore() {
     try {
@@ -84,6 +84,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!entry) {
       if (feedbackSubmittedAtElem) feedbackSubmittedAtElem.style.display = "none";
+      setSubmitLoading(false);
       lockFeedbackForm(false);
       return;
     }
@@ -131,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let dishes = [];
   let feedbackData = [];
+  let allFeedbackRows = [];
 
   const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s";
 
@@ -145,6 +147,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function init() {
     const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/export?format=csv`;
     const chipsCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Chips`;
+    const feedbackCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Feedback`;
     
     fetch(csvUrl)
       .then(response => {
@@ -165,6 +168,40 @@ document.addEventListener("DOMContentLoaded", () => {
         chipsOptions = fallbackChipsOptions.slice();
         renderChips();
       });
+
+    fetch(feedbackCsvUrl)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.text();
+      })
+      .then(csv => parseFeedbackCSV(csv))
+      .catch(error => {
+        console.error("Fehler beim Laden des Feedbacks:", error);
+        allFeedbackRows = [];
+      });
+  }
+
+  function parseFeedbackCSV(csv) {
+    const lines = (csv || "").trim().split("\n").filter(Boolean);
+    if (lines.length <= 1) {
+      allFeedbackRows = [];
+      return;
+    }
+
+    const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+    allFeedbackRows = lines.slice(1).map(line => {
+      const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+      const obj = {};
+      headers.forEach((header, idx) => {
+        obj[header] = values[idx] || "";
+      });
+      return obj;
+    }).filter(row => Object.values(row).some(v => v));
+
+    if (selectedDishIdx != null && dishes[selectedDishIdx]) {
+      const currentId = String(dishes[selectedDishIdx].GerichtsId || "").trim();
+      if (currentId) renderDishEvaluation(currentId, selectedDishIdx);
+    }
   }
 
   function parseChipsCSV(csv) {
@@ -356,6 +393,59 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function parseRatingValue(raw) {
+    if (raw == null) return NaN;
+    const str = String(raw).trim().replace(",", ".");
+    const num = Number(str);
+    return Number.isFinite(num) ? num : NaN;
+  }
+
+  function getDishEvaluation(dishId) {
+    const id = String(dishId || "").trim();
+    if (!id) return { count: 0, avg: null, rounded: 0 };
+
+    const rows = (allFeedbackRows || []).filter(r => {
+      const rid = String(r.GerichtsId || r.dishId || "").trim();
+      return rid === id;
+    });
+
+    const ratings = rows
+      .map(r => parseRatingValue(r.Gesamtbewertung || r.overall || r.Gesamt || r.Rating || ""))
+      .filter(v => Number.isFinite(v));
+
+    const count = rows.length;
+    if (ratings.length === 0) return { count, avg: null, rounded: 0 };
+    const sum = ratings.reduce((a, b) => a + b, 0);
+    const avg = sum / ratings.length;
+    const rounded = Math.min(5, Math.max(0, Math.round(avg)));
+    return { count, avg, rounded };
+  }
+
+  function renderDishEvaluation(dishId, dishIdx) {
+    if (!menuList || !menuList.children[dishIdx]) return;
+    const card = menuList.children[dishIdx];
+
+    let badge = card.querySelector(".dish-evaluation");
+    if (!badge) {
+      badge = document.createElement("div");
+      badge.className = "dish-evaluation";
+      card.appendChild(badge);
+    }
+
+    const { count, avg, rounded } = getDishEvaluation(dishId);
+
+    if (!count || avg == null) {
+      badge.style.display = "none";
+      badge.textContent = "";
+      return;
+    }
+
+    const avgText = (Math.round(avg * 10) / 10).toFixed(1);
+    const stars = Array.from({ length: 5 }, (_, i) => (i < rounded ? "★" : "☆")).join("");
+    badge.style.display = "flex";
+    badge.innerHTML = `<span class="dish-evaluation-summary">${avgText} (${count})</span><span class="dish-evaluation-stars" aria-label="${avgText} von 5">${stars}</span>`;
+  }
+
   function selectDish(idx, options = {}) {
     // Safety check: ensure dishes array has data
     if (!dishes || dishes.length === 0) {
@@ -403,11 +493,13 @@ document.addEventListener("DOMContentLoaded", () => {
     selectedDishIdx = idx;
     
     const dish = dishes[idx].Gericht;
+    const dishId = String(dishes[idx].GerichtsId || "").trim() || dish;
     currentDishElem.textContent = dish;
     feedbackDishInput.value = dish;
-    if (feedbackDishIdInput) feedbackDishIdInput.value = dish;
+    if (feedbackDishIdInput) feedbackDishIdInput.value = dishId;
     resultDiv.style.display = "none";
     feedbackForm.style.display = "block";
+    setSubmitLoading(false);
     if (ratingOverallInput) ratingOverallInput.value = "";
     refreshStarRatings();
     selectedChips.clear();
@@ -416,7 +508,8 @@ document.addEventListener("DOMContentLoaded", () => {
       commentField.placeholder = "Kurzfeedback...";
       commentField.value = "";
     }
-    applyStoredFeedbackIfAny(dish);
+    applyStoredFeedbackIfAny(dishId);
+    renderDishEvaluation(dishId, idx);
   }
 
   function selectTodayDish() {
@@ -490,11 +583,19 @@ document.addEventListener("DOMContentLoaded", () => {
         };
         writeFeedbackStore(store);
 
+        allFeedbackRows.push({ GerichtsId: dishId, Gesamtbewertung: overall });
+
         spawnStarBurst(70);
 
         applyStoredFeedbackIfAny(dishId);
         feedbackForm.style.display = "block";
         resultDiv.style.display = "none";
+
+        if (selectedDishIdx != null) {
+          const current = dishes?.[selectedDishIdx];
+          const currentId = String(current?.GerichtsId || "").trim();
+          if (currentId) renderDishEvaluation(currentId, selectedDishIdx);
+        }
       })
       .catch(error => {
         console.error("Fehler beim Absenden:", error);
