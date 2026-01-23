@@ -157,6 +157,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Add selected class to current item safely
     if (menuList.children[idx]) {
       menuList.children[idx].classList.add("selected");
+      
+      // Scroll the selected item into center view
+      const selectedItem = menuList.children[idx];
+      const containerWidth = menuList.offsetWidth;
+      const itemWidth = selectedItem.offsetWidth;
+      const itemLeft = selectedItem.offsetLeft;
+      const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2);
+      
+      menuList.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
     }
     
     const dish = dishes[idx].Gericht;
