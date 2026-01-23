@@ -473,19 +473,6 @@ document.addEventListener("DOMContentLoaded", () => {
       card.appendChild(badge);
     }
 
-    const dishDate = dishes?.[dishIdx]?.datumObj ? startOfDay(dishes[dishIdx].datumObj) : null;
-    const isTodayDish = dishDate ? dishDate.getTime() === startOfDay(today).getTime() : false;
-
-    if (isTodayDish) {
-      const store = readFeedbackStore();
-      const hasLocalFeedback = Boolean(store?.[String(dishId || "").trim()]);
-      if (!hasLocalFeedback) {
-        badge.style.display = "flex";
-        badge.innerHTML = `<span class="dish-evaluation-prompt">Feedback abgeben,<br>um Bewertung zu sehen</span>`;
-        return;
-      }
-    }
-
     const { count, avg, rounded } = getDishEvaluation(dishId);
 
     if (!count || avg == null) {
