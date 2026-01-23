@@ -33,10 +33,10 @@ function doPost(e) {
     // Daten in Form_Responses hinzufügen
     const row = [
       new Date().toLocaleString("de-DE"),  // Zeitstempel
+      params.dishId || "",                  // GerichtsId
       params.dish || "",                    // Gericht
       params.overall || "",                 // Gesamtbewertung
-      params.food || "",                    // Essen
-      params.wait || "",                    // Wartezeit
+      params.chips || "",                   // Chips
       params.comment || ""                  // Kommentar
     ];
     

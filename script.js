@@ -1,10 +1,14 @@
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("  Food App v1.0.12 - Loaded at", new Date().toLocaleTimeString());
+  console.log("  Food App v1.1.0 - Loaded at", new Date().toLocaleTimeString());
   
   const menuList = document.getElementById("menu-list");
   const currentDishElem = document.getElementById("current-dish");
   const feedbackForm = document.getElementById("feedback-form");
+  const feedbackDishIdInput = document.getElementById("feedback-dish-id");
   const feedbackDishInput = document.getElementById("feedback-dish");
+  const ratingOverallInput = document.getElementById("rating-overall");
+  const feedbackChipsInput = document.getElementById("feedback-chips");
+  const chipsContainer = document.getElementById("chips-container");
   const resultDiv = document.getElementById("feedback-result");
   const avgOverallElem = document.getElementById("avg-overall");
   const avgFoodElem = document.getElementById("avg-food");
@@ -12,12 +16,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const recentCommentsElem = document.getElementById("recent-comments");
   const dateElem = document.getElementById("date");
 
-  const ratingInputs = {
-    overall: document.getElementById("rating-overall"),
-    food: document.getElementById("rating-food"),
-    wait: document.getElementById("rating-wait"),
-  };
+  const fallbackChipsOptions = [
+    "zu salzig",
+    "zu scharf",
+    "zu fade",
+    "zu trocken",
+    "zu fettig",
+    "zu kalt",
+    "zu heiß"
+  ];
 
+  let chipsOptions = [];
+  const selectedChips = new Set();
+  
   const today = new Date();
   dateElem.textContent = today.toLocaleDateString();
   
@@ -53,13 +64,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------
   // Apps Script Deployment URL
   // -------------------------
-  const appsScriptUrl = `https://script.google.com/macros/s/AKfycbwg855vIGTAjpEN_3k7xpFrVAIOxJv-EeDN24kdVFb6B-eAWretj_t-2MRJMzgRPD0H8g/exec`;
+  const appsScriptUrl = `https://script.google.com/macros/s/AKfycby2d7gjT-1Iw0TGMCi7ZPExKEidurRfmcQe45PtyYUMw5Cg6VSO6NfA_DPUvfS4hWCy_Q/exec`;
 
   // -------------------------
   // Google Sheets CSV Export laden
   // -------------------------
   function init() {
     const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/export?format=csv`;
+    const chipsCsvUrl = `https://docs.google.com/spreadsheets/d/${sheetID}/gviz/tq?tqx=out:csv&sheet=Chips`;
     
     fetch(csvUrl)
       .then(response => {
@@ -68,6 +80,47 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .then(csv => parseCSV(csv))
       .catch(error => console.error("Fehler beim Laden der Google Sheets:", error));
+
+    fetch(chipsCsvUrl)
+      .then(response => {
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return response.text();
+      })
+      .then(csv => parseChipsCSV(csv))
+      .catch(error => {
+        console.error("Fehler beim Laden der Chips:", error);
+        chipsOptions = fallbackChipsOptions.slice();
+        renderChips();
+      });
+  }
+
+  function parseChipsCSV(csv) {
+    const lines = csv.trim().split("\n");
+    if (lines.length <= 1) {
+      chipsOptions = fallbackChipsOptions.slice();
+      renderChips();
+      return;
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const chipColIdx = headers.findIndex(h => h === "Chips");
+    if (chipColIdx < 0) {
+      chipsOptions = fallbackChipsOptions.slice();
+      renderChips();
+      return;
+    }
+
+    chipsOptions = lines
+      .slice(1)
+      .map(line => {
+        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        return values[chipColIdx] || "";
+      })
+      .map(v => v.trim())
+      .filter(v => v);
+
+    if (chipsOptions.length === 0) chipsOptions = fallbackChipsOptions.slice();
+    renderChips();
   }
 
   function parseCSV(csv) {
@@ -130,17 +183,17 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".star-rating").forEach(container => {
       if (container.dataset.initialized === "true") return;
       const key = container.dataset.input;
-      const hiddenInput = ratingInputs[key];
-      if (!hiddenInput) return;
+      if (key !== "overall") return;
+      if (!ratingOverallInput) return;
 
-      setStarRating(container, hiddenInput.value);
+      setStarRating(container, ratingOverallInput.value);
 
       container.addEventListener("click", e => {
         const btn = e.target.closest(".star-btn");
         if (!btn || !container.contains(btn)) return;
 
         const value = Number(btn.dataset.value);
-        hiddenInput.value = String(value);
+        ratingOverallInput.value = String(value);
         setStarRating(container, value);
       });
 
@@ -151,11 +204,48 @@ document.addEventListener("DOMContentLoaded", () => {
   function refreshStarRatings() {
     document.querySelectorAll(".star-rating").forEach(container => {
       const key = container.dataset.input;
-      const hiddenInput = ratingInputs[key];
-      if (!hiddenInput) return;
-      setStarRating(container, hiddenInput.value);
+      if (key !== "overall") return;
+      if (!ratingOverallInput) return;
+      setStarRating(container, ratingOverallInput.value);
     });
   }
+
+  function syncChipsHiddenInput() {
+    if (!feedbackChipsInput) return;
+    feedbackChipsInput.value = Array.from(selectedChips).join(", ");
+  }
+
+  function renderChips() {
+    if (!chipsContainer) return;
+    chipsContainer.innerHTML = "";
+
+    (chipsOptions.length ? chipsOptions : fallbackChipsOptions).forEach(label => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip";
+      btn.textContent = label;
+      btn.setAttribute("aria-pressed", "false");
+
+      btn.addEventListener("click", () => {
+        if (selectedChips.has(label)) {
+          selectedChips.delete(label);
+          btn.classList.remove("is-selected");
+          btn.setAttribute("aria-pressed", "false");
+        } else {
+          selectedChips.add(label);
+          btn.classList.add("is-selected");
+          btn.setAttribute("aria-pressed", "true");
+        }
+        syncChipsHiddenInput();
+      });
+
+      chipsContainer.appendChild(btn);
+    });
+
+    syncChipsHiddenInput();
+  }
+
+  renderChips();
 
   function showLoadingSkeletons() {
     menuList.innerHTML = '';
@@ -223,12 +313,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const dish = dishes[idx].Gericht;
     currentDishElem.textContent = dish;
     feedbackDishInput.value = dish;
+    if (feedbackDishIdInput) feedbackDishIdInput.value = dish;
     resultDiv.style.display = "none";
     feedbackForm.style.display = "block";
-    Object.values(ratingInputs).forEach(input => {
-      if (input) input.value = "";
-    });
+    if (ratingOverallInput) ratingOverallInput.value = "";
     refreshStarRatings();
+    selectedChips.clear();
+    renderChips();
     updateFeedbackAnalysis(dish);
   }
 
@@ -241,19 +332,21 @@ document.addEventListener("DOMContentLoaded", () => {
     else selectDish(0);
   }
 
-  // -------------------------
   // Feedbackformular submit
   // -------------------------
   feedbackForm.addEventListener("submit", e => {
     e.preventDefault();
     const formData = new FormData(feedbackForm);
     const dish = formData.get("dish");
+    const dishId = formData.get("dishId");
+    const overall = formData.get("overall");
+    const chips = formData.get("chips");
 
     const data = new URLSearchParams();
+    data.append("dishId", dishId);
     data.append("dish", dish);
-    data.append("overall", formData.get("overall"));
-    data.append("food", formData.get("food"));
-    data.append("wait", formData.get("wait"));
+    data.append("overall", overall);
+    data.append("chips", chips);
     data.append("comment", formData.get("comment"));
 
     console.log("Sende Feedback zum Apps Script:", Object.fromEntries(data));

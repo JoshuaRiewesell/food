@@ -20,10 +20,10 @@
 <section id="feedback-section">
   <h2>Feedback für: <span id="current-dish">Lade...</span></h2>
   <form id="feedback-form">
+    <input type="hidden" name="dishId" id="feedback-dish-id">
     <input type="hidden" name="dish" id="feedback-dish">
     <input type="hidden" name="overall" id="rating-overall" value="">
-    <input type="hidden" name="food" id="rating-food" value="">
-    <input type="hidden" name="wait" id="rating-wait" value="">
+    <input type="hidden" name="chips" id="feedback-chips" value="">
     <label>Gesamtbewertung:
       <div class="star-rating" data-input="overall">
         <button type="button" class="star-btn" data-value="1" aria-label="1 Stern">
@@ -43,47 +43,13 @@
         </button>
       </div>
     </label>
-    <label>Qualität des Essens:
-      <div class="star-rating" data-input="food">
-        <button type="button" class="star-btn" data-value="1" aria-label="1 Stern">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="2" aria-label="2 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="3" aria-label="3 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="4" aria-label="4 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="5" aria-label="5 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-      </div>
-    </label>
-    <label>Wartezeit:
-      <div class="star-rating" data-input="wait">
-        <button type="button" class="star-btn" data-value="1" aria-label="1 Stern">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="2" aria-label="2 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="3" aria-label="3 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="4" aria-label="4 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-        <button type="button" class="star-btn" data-value="5" aria-label="5 Sterne">
-          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" class="star-icon"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
-        </button>
-      </div>
+    <label>Chips (mehrfach auswählbar):
+      <div id="chips-container" class="chips"></div>
     </label>
     <label>Kommentar (optional):
       <textarea name="comment" placeholder="Kurzfeedback..."></textarea>
     </label>
+
     <button type="submit">Feedback senden</button>
   </form>
 
