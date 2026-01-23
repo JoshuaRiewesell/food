@@ -34,6 +34,45 @@ document.addEventListener("DOMContentLoaded", () => {
   const today = new Date();
   const LOCAL_STORAGE_KEY = "foodApp.feedbackByDish.v2";
 
+  function startOfDay(dt) {
+    const d = new Date(dt);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  function parseCsvLine(line) {
+    const out = [];
+    let cur = "";
+    let inQuotes = false;
+    for (let i = 0; i < line.length; i++) {
+      const ch = line[i];
+      if (inQuotes) {
+        if (ch === '"') {
+          const next = line[i + 1];
+          if (next === '"') {
+            cur += '"';
+            i++;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          cur += ch;
+        }
+      } else {
+        if (ch === ',') {
+          out.push(cur);
+          cur = "";
+        } else if (ch === '"') {
+          inQuotes = true;
+        } else {
+          cur += ch;
+        }
+      }
+    }
+    out.push(cur);
+    return out.map(v => v.trim());
+  }
+
   function readFeedbackStore() {
     try {
       const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
@@ -188,9 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const headers = lines[0].split(",").map(h => h.trim().replace(/^"|"$/g, ""));
+    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g, ""));
     allFeedbackRows = lines.slice(1).map(line => {
-      const values = line.split(",").map(v => v.trim().replace(/^"|"$/g, ""));
+      const values = parseCsvLine(line).map(v => v.replace(/^"|"$/g, ""));
       const obj = {};
       headers.forEach((header, idx) => {
         obj[header] = values[idx] || "";
@@ -212,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g, ''));
     const chipColIdx = headers.findIndex(h => h === "Chips");
     if (chipColIdx < 0) {
       chipsOptions = fallbackChipsOptions.slice();
@@ -223,7 +262,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chipsOptions = lines
       .slice(1)
       .map(line => {
-        const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+        const values = parseCsvLine(line).map(v => v.replace(/^"|"$/g, ''));
         return values[chipColIdx] || "";
       })
       .map(v => v.trim())
@@ -241,12 +280,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Parse header
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
+    const headers = parseCsvLine(lines[0]).map(h => h.replace(/^"|"$/g, ''));
     console.log("CSV Headers:", headers);
     
     // Parse rows
     dishes = lines.slice(1).map(line => {
-      const values = line.split(',').map(v => v.trim().replace(/^"|"$/g, ''));
+      const values = parseCsvLine(line).map(v => v.replace(/^"|"$/g, ''));
       const obj = {};
       headers.forEach((header, idx) => {
         obj[header] = values[idx] || '';
@@ -432,6 +471,19 @@ document.addEventListener("DOMContentLoaded", () => {
       card.appendChild(badge);
     }
 
+    const dishDate = dishes?.[dishIdx]?.datumObj ? startOfDay(dishes[dishIdx].datumObj) : null;
+    const isTodayDish = dishDate ? dishDate.getTime() === startOfDay(today).getTime() : false;
+
+    if (isTodayDish) {
+      const store = readFeedbackStore();
+      const hasLocalFeedback = Boolean(store?.[String(dishId || "").trim()]);
+      if (!hasLocalFeedback) {
+        badge.style.display = "flex";
+        badge.innerHTML = `<span class="dish-evaluation-prompt">Feedback abgeben,<br>um Bewertung zu sehen</span>`;
+        return;
+      }
+    }
+
     const { count, avg, rounded } = getDishEvaluation(dishId);
 
     if (!count || avg == null) {
@@ -498,7 +550,15 @@ document.addEventListener("DOMContentLoaded", () => {
     feedbackDishInput.value = dish;
     if (feedbackDishIdInput) feedbackDishIdInput.value = dishId;
     resultDiv.style.display = "none";
-    feedbackForm.style.display = "block";
+
+    const dishDate = dishes[idx].datumObj ? startOfDay(dishes[idx].datumObj) : null;
+    const isFutureDish = dishDate ? dishDate.getTime() > startOfDay(today).getTime() : false;
+    if (isFutureDish) {
+      feedbackForm.style.display = "none";
+    } else {
+      feedbackForm.style.display = "block";
+    }
+
     setSubmitLoading(false);
     if (ratingOverallInput) ratingOverallInput.value = "";
     refreshStarRatings();
@@ -508,7 +568,9 @@ document.addEventListener("DOMContentLoaded", () => {
       commentField.placeholder = "Kurzfeedback...";
       commentField.value = "";
     }
-    applyStoredFeedbackIfAny(dishId);
+    if (!isFutureDish) {
+      applyStoredFeedbackIfAny(dishId);
+    }
     renderDishEvaluation(dishId, idx);
   }
 

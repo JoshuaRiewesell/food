@@ -42,7 +42,6 @@ section { background:white; margin:1rem 0; padding:1rem; border-radius:10px; box
 .menu-item.selected .dish-evaluation {
   background:rgba(255,255,255,0.18);
   border-color:rgba(255,255,255,0.35);
-  color:#fff;
 }
 
 .dish-evaluation-stars {
@@ -52,8 +51,11 @@ section { background:white; margin:1rem 0; padding:1rem; border-radius:10px; box
   line-height:1;
 }
 
-.menu-item.selected .dish-evaluation-stars {
-  color:#fff;
+.dish-evaluation-prompt {
+  font-size:0.68rem;
+  line-height:1.05;
+  text-align:right;
+  opacity:0.95;
 }
 
 /* Shimmer Skeleton Loader */
