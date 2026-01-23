@@ -19,11 +19,11 @@ function doPost(e) {
     }
 
     // Form_Responses Sheet suchen
-    let responseSheet = feedbackSheet.getSheetByName(FORM_RESPONSES_SHEET);
+    let responseSheet = feedbackSheet;
     
     if (!responseSheet) {
       Logger.log("Form_Responses Sheet nicht gefunden. Verfügbare Sheets:");
-      const sheets = feedbackSheet.getSheets();
+      const sheets = spreadsheet.getSheets();
       sheets.forEach(s => Logger.log("- " + s.getName()));
       return createResponse(false, "Form_Responses Sheet nicht gefunden");
     }
