@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let dishes = [];
   let feedbackData = [];
 
-  const sheetURL = "https://docs.google.com/spreadsheets/d/1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s/edit?usp=drivesdk"; // Sheet muss öffentlich sein
+  const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s"; // Nur die ID, Sheet muss öffentlich sein
 
   // -------------------------
   // Tabletop.js laden
@@ -28,13 +28,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function init() {
     Tabletop.init({
-      key: sheetURL,
+      key: sheetID,
       simpleSheet: true,
       callback: data => {
         dishes = data;
         displayDishes();
         selectTodayDish();
-      }
+      },
+      error: () => console.error("Fehler beim Laden der Google Sheets. Stelle sicher, dass die Sheet öffentlich ist!")
     });
   }
 
@@ -97,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // -------------------------
   function updateFeedbackAnalysis(dish) {
     Tabletop.init({
-      key: sheetURL,
+      key: sheetID,
       simpleSheet: true,
       callback: data => {
         feedbackData = data.filter(f => f.Gericht === dish);
