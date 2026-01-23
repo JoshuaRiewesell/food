@@ -21,6 +21,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const sheetID = "1X1leF9642035Ok4huMcOuHwSc1KQB7aKhStgUttYF1s";
 
   // -------------------------
+  // Google Form Konfiguration
+  // -------------------------
+  const formId = "1f4zjyTaN2oXKcNXf0BxDbNo9EkRT6nm6GzNc2rie4RY";
+  const formEntryIds = {
+    overall: "entry.1250813182",
+    food: "entry.207920365",
+    wait: "entry.54224442",
+    dish: "entry.599666163",
+    comment: "entry.931221081"
+  };
+
+  // -------------------------
   // Google Sheets CSV Export laden
   // -------------------------
   function init() {
@@ -130,64 +142,34 @@ document.addEventListener("DOMContentLoaded", () => {
     const formData = new FormData(feedbackForm);
     const dish = formData.get("dish");
 
-    const formId = "1f4zjyTaN2oXKcNXf0BxDbNo9EkRT6nm6GzNc2rie4RY"; // Deine Google Form ID
-
     const formUrl = `https://docs.google.com/forms/d/e/${formId}/formResponse`;
     const data = new URLSearchParams();
-    data.append("entry.1111111111", formData.get("overall"));
-    data.append("entry.2222222222", formData.get("food"));
-    data.append("entry.3333333333", formData.get("wait"));
-    data.append("entry.4444444444", dish);
-    data.append("entry.5555555555", formData.get("comment"));
+    data.append(formEntryIds.overall, formData.get("overall"));
+    data.append(formEntryIds.food, formData.get("food"));
+    data.append(formEntryIds.wait, formData.get("wait"));
+    data.append(formEntryIds.dish, dish);
+    data.append(formEntryIds.comment, formData.get("comment"));
 
     fetch(formUrl, { method:"POST", mode:"no-cors", body:data })
       .then(() => {
+        console.log("Feedback erfolgreich gesendet!");
         feedbackForm.style.display = "none";
         resultDiv.style.display = "block";
         updateFeedbackAnalysis(dish);
-      });
+      })
+      .catch(error => console.error("Fehler beim Absenden:", error));
   });
 
   // -------------------------
   // Feedbackanalyse visualisieren
   // -------------------------
   function updateFeedbackAnalysis(dish) {
-    Tabletop.init({
-      key: sheetID,
-      simpleSheet: true,
-      callback: data => {
-        feedbackData = data.filter(f => f.Gericht === dish);
-        if(feedbackData.length === 0){
-          avgOverallElem.innerHTML = "Noch keine Bewertungen.";
-          avgFoodElem.innerHTML = "";
-          avgWaitElem.innerHTML = "";
-          recentCommentsElem.innerHTML = "";
-          return;
-        }
-
-        const avg = (col) => {
-          const vals = feedbackData.map(f => Number(f[col])).filter(n => !isNaN(n));
-          return (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(2);
-        };
-
-        function createStarBar(elem, label, value) {
-          elem.innerHTML = `<div>${label}:</div>
-            <div class="star-bar-inner" style="width:${value/5*100}%">${value} ⭐</div>`;
-        }
-
-        createStarBar(avgOverallElem, "Durchschnitt Gesamt", avg("Gesamtbewertung"));
-        createStarBar(avgFoodElem, "Durchschnitt Essen", avg("Essen"));
-        createStarBar(avgWaitElem, "Durchschnitt Wartezeit", avg("Wartezeit"));
-
-        recentCommentsElem.innerHTML = "";
-        feedbackData.slice(-5).forEach(f => {
-          if(f.Kommentar){
-            const li = document.createElement("li");
-            li.textContent = f.Kommentar;
-            recentCommentsElem.appendChild(li);
-          }
-        });
-      }
-    });
+    // Platzhalter - sobald Feedback in Form_Responses landet,
+    // kann man hier eine Analyse einbauen
+    avgOverallElem.innerHTML = "Feedback wird verarbeitet...";
+    avgFoodElem.innerHTML = "";
+    avgWaitElem.innerHTML = "";
+    recentCommentsElem.innerHTML = "";
+    console.log(`Feedback für Gericht: ${dish}`);
   }
 });
