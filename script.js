@@ -296,6 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("CSV Headers:", headers);
     
     // Parse rows
+    // Filter out rows that only have an ID but no other data
     dishes = lines.slice(1).map(line => {
       const values = parseCsvLine(line).map(v => v.replace(/^"|"$/g, ''));
       const obj = {};
@@ -310,7 +311,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       
       return obj;
-    }).filter(row => Object.values(row).some(v => v)); // Remove empty rows
+    }).filter(row => {
+      // Ensure the row has more than just an ID
+      const keys = Object.keys(row);
+      const nonIdKeys = keys.filter(key => key.toLowerCase() !== 'id');
+      return nonIdKeys.some(key => row[key]);
+    }); // Remove empty rows or rows with only an ID
 
     console.log(`${dishes.length} Gerichte geladen:`, dishes);
     
